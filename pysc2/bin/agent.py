@@ -70,7 +70,8 @@ flags.DEFINE_bool("profile", False, "Whether to turn on code profiling.")
 flags.DEFINE_bool("trace", False, "Whether to trace the code execution.")
 flags.DEFINE_integer("parallel", 1, "How many instances to run in parallel.")
 
-flags.DEFINE_bool("save_replay", True, "Whether to save a replay at the end.")
+flags.DEFINE_integer("save_replay_episodes", 1, "After how many episodes a replay should be saved.")
+flags.DEFINE_string("replay_dir", None, "Which directory should the replays be saved in.")
 
 flags.DEFINE_string("map", None, "Name of a map to use.")
 flags.mark_flag_as_required("map")
@@ -78,6 +79,10 @@ flags.mark_flag_as_required("map")
 
 def run_thread(agent_classes, players, map_name, visualize):
   """Run one thread worth of the environment with agents."""
+  replay_dir = FLAGS.replay_dir
+  if (replay_dir is None):
+    replay_dir = agent_classes[0].__name__
+
   with sc2_env.SC2Env(
       map_name=map_name,
       players=players,
@@ -91,12 +96,12 @@ def run_thread(agent_classes, players, map_name, visualize):
       step_mul=FLAGS.step_mul,
       game_steps_per_episode=FLAGS.game_steps_per_episode,
       disable_fog=FLAGS.disable_fog,
-      visualize=visualize) as env:
+      visualize=visualize,
+      save_replay_episodes=FLAGS.save_replay_episodes,
+      replay_dir=replay_dir) as env:
     env = available_actions_printer.AvailableActionsPrinter(env)
     agents = [agent_cls() for agent_cls in agent_classes]
     run_loop.run_loop(agents, env, FLAGS.max_agent_steps, FLAGS.max_episodes)
-    if FLAGS.save_replay:
-      env.save_replay(agent_classes[0].__name__)
 
 
 def main(unused_argv):
