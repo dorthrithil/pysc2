@@ -88,6 +88,7 @@ class LocalBase(lib.RunConfig):
         replay_dir=os.path.join(base_dir, "Replays"),
         data_dir=base_dir, tmp_dir=None, cwd=cwd, env=env)
     self._exec_name = exec_name
+    self._sc_process_counter = 0
 
   def start(self, version=None, **kwargs):
     """Launch the game."""
@@ -125,8 +126,11 @@ class LocalBase(lib.RunConfig):
     if not os.path.exists(exec_path):
       raise sc_process.SC2LaunchError("No SC2 binary found at: %s" % exec_path)
 
+    window_loc = (0, 0) if self._sc_process_counter == 0 else (900, 300)
+    self._sc_process_counter = self._sc_process_counter + 1	
+	  
     return sc_process.StarcraftProcess(
-        self, exec_path=exec_path, version=version, **kwargs)
+        self, exec_path=exec_path, version=version, window_loc=window_loc, **kwargs)
 
 
 class Windows(LocalBase):
