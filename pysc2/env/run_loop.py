@@ -19,6 +19,8 @@ from __future__ import print_function
 
 import time
 
+from pysc2.lib.actions import FunctionCall
+
 
 def run_loop(agents, env, max_frames=0, max_episodes=0):
   """A run loop to have agents and an environment interact."""
@@ -39,13 +41,21 @@ def run_loop(agents, env, max_frames=0, max_episodes=0):
         a.reset()
       while True:
         total_frames += 1
-        actions = [agent.step(timestep)
-                   for agent, timestep in zip(agents, timesteps)]
+        actions = []
+        chat_messages = []
+        for agent, timestep in zip(agents, timesteps):
+          action = agent.step(timestep)
+          message = None
+          if not isinstance(action, FunctionCall):
+            message = action[1]
+            action = action[0]
+          actions.append(action)
+          chat_messages.append(message)
         if max_frames and total_frames >= max_frames:
           return
         if timesteps[0].last():
           break
-        timesteps = env.step(actions)
+        timesteps = env.step(actions, chat_messages)
   except KeyboardInterrupt:
     pass
   finally:
