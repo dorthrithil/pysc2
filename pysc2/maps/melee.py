@@ -37,6 +37,7 @@ melee_maps = [
     "Simple64",
     "Simple96",
     "Simple128",
+    "BattleSim_v2",
 ]
 
 for name in melee_maps:
