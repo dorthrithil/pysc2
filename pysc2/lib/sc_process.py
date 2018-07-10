@@ -19,6 +19,7 @@ from __future__ import print_function
 
 from absl import logging
 import os
+import platform
 import shutil
 import subprocess
 import tempfile
@@ -130,6 +131,14 @@ class StarcraftProcess(object):
       portpicker.return_port(self._port)
       self._port = None
     if hasattr(self, "_tmp_dir") and os.path.exists(self._tmp_dir):
+      # Create a backup of banks before deleting the temp directory
+      if platform.system() == "Linux":
+        src = os.path.join(self._tmp_dir, "SC2", "Documents", "StarCraft II", "Banks")
+        dst = os.path.expanduser("~/SC2Banks/")
+        if os.path.exists(src) and os.path.exists(dst):
+          dst = os.path.join(dst, "banks_" + str(int(time.time())))
+          shutil.copytree(src, dst)
+
       shutil.rmtree(self._tmp_dir)
 
   @property
