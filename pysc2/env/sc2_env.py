@@ -457,8 +457,13 @@ class SC2Env(environment.Base):
 
     with self._metrics.measure_observation_time():
       self._obs = self._parallel.run(c.observe for c in self._controllers)
-      agent_obs = [f.transform_obs(o) for f, o in zip(
-          self._features, self._obs)]
+      if self._state == environment.StepType.FIRST:
+        game_info = self._parallel.run(c.game_info for c in self._controllers)
+        agent_obs = [f.transform_obs(o, g) for f, o, g in zip(
+            self._features, self._obs, game_info)]
+      else:
+        agent_obs = [f.transform_obs(o) for f, o in zip(
+            self._features, self._obs)]
 
     # TODO(tewalds): How should we handle more than 2 agents and the case where
     # the episode can end early for some agents?

@@ -711,7 +711,7 @@ class Features(object):
     return self._valid_functions
 
   @sw.decorate
-  def transform_obs(self, obs):
+  def transform_obs(self, obs, game_info=None):
     """Render some SC2 observations into something an agent can handle."""
     empty = np.array([], dtype=np.int32).reshape((0, 7))
     out = named_array.NamedDict({  # Fill out some that are sometimes empty.
@@ -720,7 +720,38 @@ class Features(object):
         "build_queue": empty,
         "cargo": empty,
         "cargo_slots_available": np.array([0], dtype=np.int32),
+        "map_name": None,
+        "local_map_path": None,
+        "mod_names": None,
+        "player_info": None,
+        "map_size": None,
+        "start_locations": None,
+        "playable_area": None,
+        "placement_grid": None,
+        "pathing_grid": None,
     })
+
+    if game_info is not None:
+      out["map_name"] = game_info.map_name
+      out["local_map_path"] = game_info.local_map_path
+      out["mod_names"] = game_info.mod_names[:]
+      out["player_info"] = []
+      for player_info in game_info.player_info:
+        out["player_info"].append({
+          "player_id": player_info.player_id,
+          "type": player_info.type,
+          "race_requested": player_info.race_requested,
+          "race_actual": player_info.race_actual,
+          "difficulty": player_info.difficulty
+        })
+      out["map_size"] = point.Point.build(game_info.start_raw.map_size)
+      out["start_locations"] = []
+      for start_location in game_info.start_raw.start_locations:
+        out["start_locations"].append(point.Point.build(start_location))
+      out["playable_area"] = point.Rect(point.Point.build(game_info.start_raw.playable_area.p0),
+                                        point.Point.build(game_info.start_raw.playable_area.p1))
+      out["placement_grid"] = Feature.unpack_layer(game_info.start_raw.placement_grid)
+      out["pathing_grid"] = Feature.unpack_layer(game_info.start_raw.pathing_grid)
 
     def or_zeros(layer, size):
       if layer is not None:
