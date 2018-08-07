@@ -440,7 +440,7 @@ class SC2Env(environment.Base):
     return self._step()
 
   @sw.decorate("step_env")
-  def step(self, actions):
+  def step(self, actions, chat_messages):
     """Apply actions, step the world forward, and return observations."""
     if self._state == environment.StepType.LAST:
       return self.reset()
@@ -449,6 +449,12 @@ class SC2Env(environment.Base):
         (c.act, f.transform_action(o.observation, a))
         for c, f, o, a in zip(
             self._controllers, self._features, self._obs, actions))
+
+    self._parallel.run(
+        (c.chat, message)
+        for c, message in zip(
+            self._controllers, chat_messages)
+            if message is not None)
 
     self._state = environment.StepType.MID
     return self._step()
