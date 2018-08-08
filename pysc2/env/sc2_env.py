@@ -33,6 +33,8 @@ from pysc2.lib import metrics
 from pysc2.lib import renderer_human
 from pysc2.lib import run_parallel
 from pysc2.lib import stopwatch
+from pysc2.lib import protocol
+Status = protocol.Status
 
 from s2clientprotocol import common_pb2 as sc_common
 from s2clientprotocol import sc2api_pb2 as sc_pb
@@ -463,7 +465,7 @@ class SC2Env(environment.Base):
 
     with self._metrics.measure_observation_time():
       self._obs = self._parallel.run(c.observe for c in self._controllers)
-      if self._state == environment.StepType.FIRST:
+      if all(c.status == Status.in_game for c in self._controllers):
         game_info = self._parallel.run(c.game_info for c in self._controllers)
         agent_obs = [f.transform_obs(o, g) for f, o, g in zip(
             self._features, self._obs, game_info)]

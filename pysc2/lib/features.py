@@ -917,6 +917,7 @@ class Features(object):
 
     out["available_actions"] = np.array(self.available_actions(obs.observation),
                                         dtype=np.int32)
+    out["camera_position"] = point.Point.build(raw.player.camera)
 
     return out
 
