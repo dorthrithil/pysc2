@@ -147,6 +147,8 @@ class FeatureUnit(enum.IntEnum):
   assigned_harvesters = 23
   ideal_harvesters = 24
   weapon_cooldown = 25
+  real_x = 26
+  real_y = 27
 
 
 class Feature(collections.namedtuple(
@@ -869,6 +871,8 @@ class Features(object):
           u.assigned_harvesters,
           u.ideal_harvesters,
           u.weapon_cooldown,
+          u.pos.x,
+          u.pos.y,
       ), dtype=np.int32)
 
     raw = obs.observation.raw_data
